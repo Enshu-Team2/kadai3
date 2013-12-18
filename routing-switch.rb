@@ -9,6 +9,8 @@ require 'topology'
 require 'trema'
 require 'trema-extensions/port'
 
+require 'thread'
+
 #
 # Routing Switch using LLDP to collect network topology information.
 #
@@ -23,7 +25,55 @@ class RoutingSwitch < Controller
     @command_line = CommandLine.new
     @command_line.parse(ARGV.dup)
     @topology = Topology.new(@command_line)
+
+		@queue = Queue.new
+
+		@thread = Thread.new do
+			loop do
+				input = $stdin.gets
+				args = input.split(" ")
+				parser(args)
+			end
+		end
   end
+
+	def parser(args)
+		case args[0]
+			when "create-slice"
+				if (args.length == 2)
+					@queue.push([args[1]])
+				else
+					p "Usage: create-slice slice"
+				end
+			when "delete-slice"
+				if (args.length == 2)
+					@queue.push([args[1]])
+				else
+					p "Usage: delete-slice slice"
+				end
+			when "add-host"
+				if (args.length == 3)
+					@queue.push([args[1],args[2]])
+				else
+					p "Usage: add-host slice mac"
+				end
+			when "delete-host"
+				if (args.length == 3)
+					@queue.push([args[1],args[2]])
+				else
+					p "Usage: delete-host slice mac"
+				end
+			when "show"
+				if (args.length == 1)
+
+				else
+					p "Usage: show"
+				end
+			else
+				p "No such command"
+		end
+	end
+
 
   def switch_ready(dpid)
     @adb[dpid] = {} unless @adb.include?(dpid)
