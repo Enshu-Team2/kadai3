@@ -23,6 +23,7 @@ class RoutingSwitch < Controller
   def start
     @fdb = {}
     @adb = {}
+    @slice = {}
     @command_line = CommandLine.new
     @command_line.parse(ARGV.dup)
     @topology = Topology.new(@command_line)
@@ -42,25 +43,25 @@ class RoutingSwitch < Controller
 		case args[0]
 			when "create-slice"
 				if (args.length == 2)
-					@queue.push([args[1]])
+					@queue.push([args[0],args[1]])
 				else
 					p "Usage: create-slice slice"
 				end
 			when "delete-slice"
 				if (args.length == 2)
-					@queue.push([args[1]])
+					@queue.push([args[0],args[1]])
 				else
 					p "Usage: delete-slice slice"
 				end
 			when "add-host"
 				if (args.length == 3)
-					@queue.push([args[1],args[2]])
+					@queue.push([args[0],args[1],args[2]])
 				else
 					p "Usage: add-host slice mac"
 				end
 			when "delete-host"
 				if (args.length == 3)
-					@queue.push([args[1],args[2]])
+					@queue.push([args[0],args[1],args[2]])
 				else
 					p "Usage: delete-host slice mac"
 				end
@@ -170,6 +171,36 @@ class RoutingSwitch < Controller
   def slice_command_run
     queue_result = @queue.pop
     p queue_result
+    command = queue_result[0]
+    case command
+    when "create-slice" 
+      unless @slice[queue_result[1]]
+        @slice[queue_result[1]] = []
+      else
+        p "cannot create slice"
+      end
+    when "delete-slice"
+      if @slice[queue_result[1]]
+        @slice.delete(queue_result[1])
+      else
+        p "cannot delete slice"
+      end
+    when "add-host"
+      if @slice[queue_result[1]]
+        @slice[queue_result[1]] << queue_result[2]
+      else
+        p "cannot add to slice"
+      end
+    when "delete-host"
+      if @slice[queue_result[1]]
+        @slice[queue_result[1]].delete(queue_result[2])
+      else
+        p "cannot delete from slice"
+      end
+    else
+      p "cannot read command"
+    end
+    p @slice
   end
 
   def send_lldp(dpid, ports)
