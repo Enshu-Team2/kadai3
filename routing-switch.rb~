@@ -197,12 +197,12 @@ class RoutingSwitch < Controller
       if @slice[queue_result[1]]
         @slice[queue_result[1]] << queue_result[2]
       else
-        p "Error: This mac address already exists."
+        p "Error: This mac already exists."
       end
     when "delete-host"
       if @slice[queue_result[1]]
         if @slice[queue_result[1]].delete(queue_result[2]).nil?
-	  p "Error: Such a mac address does not exist."	
+	  p "Error: Such a mac does not exist."	
 	end
       else
         p "Error: Such a slice does not exist"
