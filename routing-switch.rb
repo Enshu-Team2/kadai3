@@ -16,6 +16,7 @@ require 'thread'
 #
 class RoutingSwitch < Controller
   periodic_timer_event :flood_lldp_frames, 1
+  periodic_timer_event :check_queue, 1
 
   FLOWHARDTIMEOUT = 300
 
@@ -160,6 +161,15 @@ class RoutingSwitch < Controller
     @topology.each_switch do |dpid, ports|
       send_lldp dpid, ports
     end
+  end
+
+  def check_queue
+    slice_command_run unless @queue.empty?
+  end
+
+  def slice_command_run
+    queue_result = @queue.pop
+    p queue_result
   end
 
   def send_lldp(dpid, ports)
