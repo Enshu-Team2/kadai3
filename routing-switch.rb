@@ -203,6 +203,11 @@ class RoutingSwitch < Controller
       end
     when "delete-slice"
       if @slice[queue_result[1]] # need to delete flow entry in switch
+        @slice[queue_result[1]].each do |each|
+          p each
+          flow_mod_delete(each)
+          @slice_reverse.delete(each)
+        end
         @slice.delete(queue_result[1])
       else
         p "Error: Such a slice does not exist."
@@ -224,11 +229,14 @@ class RoutingSwitch < Controller
         p "Error: This slice does not exist."
       end
     when "delete-host"
-      if @slice[queue_result[1]] # need to delete flow entry in switch
+      if @slice[queue_result[1]]
         if @slice[queue_result[1]].delete(queue_result[2]).nil?
           p "Error: Such a mac address does not exist."	
         end
-        if @slice_reverse.delete(queue_result[2]).nil?
+        if @slice_reverse[queue_result[2]]
+          @slice_reverse.delete(queue_result[2])
+          flow_mod_delete(queue_result[2])
+        else
           p "Error: Such a mac address does not exist."
         end
       else
@@ -279,6 +287,19 @@ class RoutingSwitch < Controller
       match: Match.new(dl_dst: message.macda.to_s),
       actions: SendOutPort.new(port)
     )
+  end
+
+  def flow_mod_delete(dst_mac)
+    @adb.each do |key, value|
+      send_flow_mod_delete(
+        key,
+        match: Match.new(dl_dst: dst_mac.to_s)
+      )
+      send_flow_mod_delete(
+        key,
+        match: Match.new(dl_src: dst_mac.to_s)
+      )
+    end
   end
 
   def packet_out(dpid, message, port)
