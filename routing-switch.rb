@@ -23,6 +23,7 @@ class RoutingSwitch < Controller
     @fdb = {}
     @adb = {}
     @slice = {}
+    @slice_reverse = {}
     @command_line = CommandLine.new
     @command_line.parse(ARGV.dup)
     @topology = Topology.new(@command_line)
@@ -115,7 +116,13 @@ class RoutingSwitch < Controller
       add_host_by_packet_in dpid, packet_in
       learn_new_host_fdb dpid, packet_in
       dest_host = @fdb[packet_in.macda]
-      set_flow_for_routing dpid, packet_in, dest_host if dest_host
+      dest_slice = @slice_reverse[packet_in.macda]
+      source_slice = @slice_reverse[packet_in.macsa]
+      if dest_slice == source_slice
+        unless dest_slice.nil?
+          set_flow_for_routing dpid, packet_in, dest_host if dest_host
+        end
+      end
     elsif packet_in.lldp?
       @topology.add_link_by dpid, packet_in
     end
@@ -181,29 +188,42 @@ class RoutingSwitch < Controller
     p queue_result
     command = queue_result[0]
     case command
-    when "create-slice" 
+    when "create-slice"
       unless @slice[queue_result[1]]
         @slice[queue_result[1]] = []
       else
         p "Error: This slice already exists."
       end
     when "delete-slice"
-      if @slice[queue_result[1]]
+      if @slice[queue_result[1]] # need to delete flow entry in switch
         @slice.delete(queue_result[1])
       else
         p "Error: Such a slice does not exist."
       end
     when "add-host"
       if @slice[queue_result[1]]
-        @slice[queue_result[1]] << queue_result[2]
+        unless @slice[queue_result[1]].include?(queue_result[2])
+          unless @slice_reverse.key?(queue_result[2])
+            @slice[queue_result[1]] << queue_result[2]
+            @slice_reverse[queue_result[2]] = {} if @slice_reverse[queue_result[2]].nil?
+            @slice_reverse[queue_result[2]] = queue_result[1]
+          else
+            p "Error: This mac address already exist."
+          end
+        else
+          p "Error: This mac address already exist."
+        end
       else
-        p "Error: This mac address already exists."
+        p "Error: This slice does not exist."
       end
     when "delete-host"
-      if @slice[queue_result[1]]
+      if @slice[queue_result[1]] # need to delete flow entry in switch
         if @slice[queue_result[1]].delete(queue_result[2]).nil?
-	  p "Error: Such a mac address does not exist."	
-	end
+          p "Error: Such a mac address does not exist."	
+        end
+        if @slice_reverse.delete(queue_result[2]).nil?
+          p "Error: Such a mac address does not exist."
+        end
       else
         p "Error: Such a slice does not exist"
       end
@@ -211,6 +231,7 @@ class RoutingSwitch < Controller
       p "cannot read command"
     end
     p @slice
+    p @slice_reverse
   end
 
   def send_lldp(dpid, ports)
