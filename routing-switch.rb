@@ -156,9 +156,15 @@ class RoutingSwitch < Controller
     if dest_host['dpid'] == dpid
       flow_mod_to_host(dpid, packet_in, dest_host['in_port'], FLOWHARDTIMEOUT)
       packet_out(dpid, packet_in, dest_host['in_port'])
+      key = Match.new(
+        dl_src: packet_in.macsa.to_s,
+        dl_dst: packet_in.macda.to_s
+      ).to_s
+      @adb[dpid][key] = dest_host['in_port'] unless @adb[dpid].include?(key)
     else
       sp = @command_line.shortest_path
       links_result = sp.get_shortest_path(@topology, dpid, dest_host['dpid'])
+      p links_result
       if links_result.length > 0
         links_result.each do |each|
           flow_mod(each[0], packet_in, each[1].to_i, FLOWHARDTIMEOUT)
@@ -166,11 +172,12 @@ class RoutingSwitch < Controller
             dl_src: packet_in.macsa.to_s,
             dl_dst: packet_in.macda.to_s
           ).to_s
-          @adb[dpid][key] = each[1] unless @adb[dpid].include?(key)
+          @adb[each[0]][key] = each[1] unless @adb[each[0]].include?(key)
           @topology.increment_link_weight_on_flow each[0], each[1]
         end
       end
     end
+    p @adb
   end
 
   def flood_lldp_frames
