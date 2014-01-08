@@ -1,3 +1,0 @@
-linux: --tags ~@wip --tags ~@mac
-mac: --tags ~@wip --tags ~@linux
-
