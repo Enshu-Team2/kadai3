@@ -1,0 +1,245 @@
+#+TITLE: Pio の開発
+#+FILETAGS: PIO
+#+ICALENDAR_EXCLUDE_TAGS: noex
+
+GitHub のリポジトリはこちら https://github.com/trema/pio
+
+* Special Dates
+* Notes
+** ARP フォーマット                                                   :NOTE:
+:LOGBOOK:
+CLOCK: [2013-09-05 木 17:30]--[2013-09-05 木 17:31] =>  0:01
+:END:
+[2013-09-05 木 17:30]
+
+近藤さんおすすめの ARP フォーマット解説。
+http://www.n-study.com/network/arpheader.htm
+** ICMP のテスト用データ                                              :NOTE:
+:LOGBOOK:
+CLOCK: [2013-09-22 日 22:25]--[2013-09-22 日 22:26] =>  0:01
+:END:
+[2013-09-22 日 22:25]
+
+https://gist.github.com/shun159/6647589
+** ターミナルでペアプロするための設定                                 :NOTE:
+:LOGBOOK:
+CLOCK: [2013-07-22 月 09:29]--[2013-07-22 月 09:30] =>  0:01
+:END:
+:PROPERTIES:
+:orgtrello-id: 5201cfedc4c8f14e25000f99
+:ID:       B40E64E6-BFD3-4ABA-8F02-E7C180AF2737
+:END:
+[2013-07-22 月 09:29]
+
+http://www.zeespencer.com/articles/building-a-remote-pairing-setup/
+** ICMP フォーマット                                                  :NOTE:
+[2013-09-22 日 23:09]
+
+http:///www.asahi-net.or.jp/~aa4t-nngk/ipttut/output/icmpheaders.html
+** [[http://www.ruby-forum.com/topic/217963][any good tools for reading networking data with optional TLV - Ruby Forum]] [2013-06-21 Fri]
+:PROPERTIES:
+:ID:       1670C09A-20C7-45F9-B068-56376DFD864C
+:END:
+  BinData での optional TLV の使い方
+
+** Trema/Pioでパケットを作ろう(1)                                     :NOTE:
+:PROPERTIES:
+:ID:       BA8B555C-1FBE-4FDD-BFAC-D80EE9366643
+:END:
+[2013-10-06 日 15:55]
+
+http://d.hatena.ne.jp/stereocat/20131005/1380977633
+** Trema/Pioでパケットを作ろう(2)                                     :NOTE:
+:PROPERTIES:
+:ID:       29F0265C-BF73-4749-A93D-20B0BF62C45E
+:END:
+[2013-10-06 日 15:55]
+
+http://d.hatena.ne.jp/stereocat/20131006/1381028321
+* Tasks
+このアイテムをそれぞれのリリースに割り振る。
+** NEXT git パスワードを省略できるように
+[2013-09-13 金 17:07]
+** TODO bindata 1.6.0 の changelog をチェック
+[2013-09-05 木 21:32]
+** TODO 各 OpenFlow メッセージのパーサを作る
+[2013-09-06 金 19:27]
+*** TODO Trema::Hello の spec を見直し
+** TODO Nick さんに README の英語をチェックしてもらう
+[2013-09-18 水 12:01]
+** TODO phost を Pio で書き直す
+[2013-09-24 火 15:36]
+
+関連するタスク:
+- [[*Trema/Pio%E3%81%A7%E3%83%91%E3%82%B1%E3%83%83%E3%83%88%E3%82%92%E4%BD%9C%E3%82%8D%E3%81%86(1)][Trema/Pioでパケットを作ろう(1)]]
+- [[*Trema/Pio%E3%81%A7%E3%83%91%E3%82%B1%E3%83%83%E3%83%88%E3%82%92%E4%BD%9C%E3%82%8D%E3%81%86(2)][Trema/Pioでパケットを作ろう(2)]]
+** TODO DHCP パーサを作る
+[2013-08-02 金 17:17]
+
+近藤さんがすでにコーディング中。Pull-Request が来たらいっしょにリファ
+クタリングして取り込む予定。
+* Releases
+** DONE 0.2.2 リリース
+CLOSED: [2013-09-26 木 15:34]
+:LOGBOOK:
+CLOCK: [2013-09-19 木 14:29]--[2013-09-19 木 16:39] =>  2:10
+:END:
+[2013-09-19 木 14:17]
+*** DONE IP -> IPv4Address
+SCHEDULED: <2013-09-26 木>
+[2013-09-26 木 13:33]
+*** DONE 鈴木さんの IPv4Address への PR を Pio へ誘導
+CLOSED: [2013-09-19 木 14:29] SCHEDULED: <2013-09-19 木>
+:LOGBOOK:
+CLOCK: [2013-09-19 木 14:27]--[2013-09-19 木 14:29] =>  0:02
+:END:
+- State "TODO"       from "WAITING"    [2013-09-19 木 14:18]
+- State "WAITING"    from "TODO"       [2013-09-18 水 12:05] \\
+  0.2.0 をリリースしてから。
+[2013-09-14 土 10:22]
+
+鈴木さんが trema-edge に出している PR はこちら
+https://github.com/trema/trema-edge/pull/22
+
+コメントしておいた。
+https://github.com/trema/trema-edge/pull/22#issuecomment-24717877
+*** DONE チケットを切ったことを鈴木さんに確認
+CLOSED: [2013-09-24 火 20:57] SCHEDULED: <2013-09-24 火 13:45>
+:PROPERTIES:
+:Effort:   0:05
+:END:
+[2013-09-20 金 09:26]
+** DONE 0.2.3 リリース
+CLOSED: [2013-09-26 木 15:35]
+[2013-09-26 木 15:34]
+*** DONE Trema への組込み
+CLOSED: [2013-09-26 木 15:35]
+[2013-09-26 木 15:35]
+*** DONE gem の命名規則に合わせる
+CLOSED: [2013-09-26 木 08:28] SCHEDULED: <2013-09-26 木>
+:LOGBOOK:
+CLOCK: [2013-09-26 木 08:20]--[2013-09-26 木 08:28] =>  0:08
+CLOCK: [2013-09-26 木 08:05]--[2013-09-26 木 08:06] =>  0:01
+:END:
+:PROPERTIES:
+:Effort:   0:30
+:END:
+[2013-09-26 木 08:05]
+*** DONE 明示的に spec_helper.rb をロードしてる部分をなくす
+CLOSED: [2013-09-26 木 08:18] SCHEDULED: <2013-09-26 木>
+:LOGBOOK:
+CLOCK: [2013-09-26 木 08:14]--[2013-09-26 木 08:15] =>  0:01
+:END:
+:PROPERTIES:
+:Effort:   0:30
+:END:
+[2013-09-26 木 08:14]
+** DONE 0.2.5 リリース
+CLOSED: [2013-10-10 木 15:00]
+:LOGBOOK:
+CLOCK: [2013-09-26 木 13:31]--[2013-09-26 木 13:32] =>  0:01
+:END:
+[2013-09-26 木 13:31]
+*** DONE Trema::Mac を Pio::Mac で置き換え
+CLOSED: [2013-10-10 木 14:57] SCHEDULED: <2013-10-10 木>
+:LOGBOOK:
+CLOCK: [2013-10-10 木 11:38]--[2013-10-10 木 13:30] =>  1:52
+:END:
+[2013-10-03 木 09:04]
+**** DONE Trema ソースコード内の Trema::Mac を Pio::Mac で置換
+CLOSED: [2013-10-10 木 13:42]
+[2013-10-03 木 09:05]
+**** DONE Trema::Mac のテストコードを削除
+CLOSED: [2013-10-10 木 13:42]
+:LOGBOOK:
+CLOCK: [2013-10-03 木 09:06]--[2013-10-03 木 09:07] =>  0:01
+:END:
+[2013-10-03 木 09:06]
+**** DONE cruise.rb が通ることを確認
+CLOSED: [2013-10-10 木 14:57]
+[2013-10-03 木 09:08]
+*** DONE Pio::Mac のYARD コメントでダブってるやつは @see にする
+CLOSED: [2013-10-10 木 13:37] SCHEDULED: <2013-10-10 木>
+:LOGBOOK:
+CLOCK: [2013-10-10 木 13:30]--[2013-10-10 木 13:37] =>  0:07
+CLOCK: [2013-10-07 月 10:23]--[2013-10-07 月 10:24] =>  0:01
+:END:
+[2013-10-07 月 10:23]
+
+=#to_a= と =#to_ary= のコメントとか．
+** TODO 0.2.6 リリース
+[2013-10-10 木 13:37]
+*** DONE Pio::Mac のリファクタリング
+CLOSED: [2013-10-11 金 13:31] SCHEDULED: <2013-10-11 金>
+:LOGBOOK:
+CLOCK: [2013-10-11 金 09:39]--[2013-10-11 金 12:16] =>  2:37
+:END:
+[2013-10-11 金 09:37]
+
+- YARD コメント
+- RSpec
+- いらないメソッドの削除
+など．
+*** DONE おかしな MAC アドレスはすべて InvalidMAC 例外にまとめる
+CLOSED: [2013-10-11 金 13:31]
+:LOGBOOK:
+CLOCK: [2013-10-07 月 10:22]--[2013-10-07 月 10:23] =>  0:01
+:END:
+[2013-10-07 月 10:22]
+
+ファイルは lib/pio/mac.rb
+** TODO 0.2.7 リリース
+[2013-10-11 金 14:32]
+*** TODO 鈴木さんルータの ARP 部分を Pio で書き直してもらう
+- State "TODO"       from "WAITING"    [2013-09-19 木 14:18]
+- State "WAITING"    from "TODO"       [2013-09-18 水 12:04] \\
+  ARP のコードが実機で動いてから
+:LOGBOOK:
+CLOCK: [2013-09-14 土 10:20]--[2013-09-14 土 10:21] =>  0:01
+:END:
+[2013-09-14 土 10:20]
+
+GitHub のチケットはこちら:
+https://github.com/trema/pio/issues/1
+**** NEXT 鈴木さんルータの ARP 部分を試しに自分で書き直してみる
+SCHEDULED: <2013-10-10 木>
+:PROPERTIES:
+:Effort:   1:00
+:END:
+[2013-10-04 金 08:39]
+**** DONE 鈴木さんに ping
+CLOSED: [2013-10-01 火 12:29] SCHEDULED: <2013-10-01 火>
+:LOGBOOK:
+CLOCK: [2013-09-29 日 21:06]--[2013-09-29 日 21:07] =>  0:01
+:END:
+[2013-09-29 日 21:06]
+
+https://github.com/trema/pio/issues/1
+** TODO 0.3.0 リリース
+- State "TODO"       from "WAITING"    [2013-09-19 木 14:16]
+- State "WAITING"    from "TODO"       [2013-09-06 金 17:17] \\
+  0.2.0 が無事に出てから
+[2013-09-05 木 17:29]
+*** NEXT YARD の警告をつぶす
+SCHEDULED: <2014-08-19 火>
+:PROPERTIES:
+:Effort:   0:30
+:END:
+[2013-07-31 水 15:32]
+*** TODO flay に PR を送る (FlayTask が動かない件)
+:LOGBOOK:
+CLOCK: [2013-09-18 水 17:20]--[2013-09-18 水 17:21] =>  0:01
+:END:
+[2013-09-18 水 17:20]
+*** TODO ICMP パーサを作る
+[2013-08-02 金 17:19]
+**** WAITING 近藤さんに PR 出してもらう                          :WAITING:
+- State "WAITING"    from "TODO"       [2013-10-07 月 08:56] \\
+  近藤さんが PR の準備中．
+:LOGBOOK:
+CLOCK: [2013-10-03 木 09:10]--[2013-10-03 木 09:12] =>  0:02
+:END:
+[2013-10-03 木 09:10]
+
+開発は PR で追跡することにする．マージが可能な状態かとか，テスト成功/失
+敗も見えるし．

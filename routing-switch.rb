@@ -80,6 +80,12 @@ class RoutingSwitch < Controller
 				else
 					p "Usage: show"
 				end
+			when "test_001"
+				if (args.length == 1)
+					@queue.push(["test_001", 1])
+				else
+					p "Usage: test_001"
+				end
 			else
 				p "No such command"
 		end
@@ -242,6 +248,12 @@ class RoutingSwitch < Controller
       else
         p "Error: Such a slice does not exist"
       end
+    when "test_001"
+      mac1 = Mac.new("00:00:00:00:00:01")
+      mac2 = Mac.new("00:00:00:00:00:03")
+      @slice["1"] = [mac1, mac2]
+      @slice_reverse[mac1] = "1"
+      @slice_reverse[mac2] = "1"
     else
       p "cannot read command"
     end
