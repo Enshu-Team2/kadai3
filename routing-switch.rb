@@ -29,6 +29,7 @@ class RoutingSwitch < Controller
     @command_line.parse(ARGV.dup)
     @topology = Topology.new(@command_line)
     @db = SQLite3::Database.new("slice.db")
+    @db.close
 
 		@queue = Queue.new
 
