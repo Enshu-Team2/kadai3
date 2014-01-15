@@ -3,45 +3,52 @@ require 'rubygems'
 require 'sqlite3'
 
 class Database
+  attr_reader :db
 
-	@db = SQLite3::Database.new("slice.db")
-
-	def initialize
+  def initialize
+    @db = SQLite3::Database.new("slice.db")
     sql = <<-SQL
     create table host(
-			slice varchar(20),
-  		mac varchar(20)
+      slice varchar(20),
+      mac varchar(20)
     );
-		SQL
+    SQL
     @db.execute(sql)
-	end
+  end
 
-	def slice?(slice)
-		exist = false
-		@db.results_as_hash = true
+  def close
+    @db.execute("DROP TABLE host")
+    @db.close
+    p "database closed"
+  end
+
+  def slice?(slice)
+    exist = false
+    @db.results_as_hash = true
     @db.execute('select * from host where slice=?', slice) do |row|
       #rowは結果の配列
       #puts row.join("\t")
-			if (row[mac] == "") exist = true
+      exist = true if (row['mac'] == "")
     end
-		return exist
-	end
+    return exist
+  end
 
-	def create_slice(slice)
-		mac = ""
-		sql = "insert into host values (slice, mac)"
-		@db.execute(sql)
-	end
+  def create_slice(slice)
+    mac = ""
+    @db.execute("insert into host values (?, ?)", slice, mac)
+  end
 
-	def add_host(slice, mac)
-		sql = "insert into host values (slice, mac)"
-		@db.execute(sql)
-	end
+  def add_host(slice, mac)
+    @db.execute("insert into host values (?, ?)", slice, mac)
+  end
 
-	def close
-		@db.close
-	end
+  def delete_slice(slice)
+    @db.execute("delete from host where slice=?", slice)
+  end
 
+  def delete_host(slice)
+    @db.execute("delete from host where slice=?", slice)
+  end
 
 end
 
