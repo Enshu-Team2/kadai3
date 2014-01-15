@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 $LOAD_PATH.unshift File.expand_path(File.join File.dirname(__FILE__), 'lib')
- 
+
 require 'rubygems'
 require 'bundler/setup'
- 
+
 require 'command-line'
 require 'topology'
 require 'trema'
@@ -12,7 +12,7 @@ require 'database'
 
 require 'thread'
 require 'sqlite3'
- 
+
 #
 # Routing Switch using LLDP to collect network topology information.
 #
@@ -20,12 +20,12 @@ class RoutingSwitch < Controller
   periodic_timer_event :flood_lldp_frames, 1
   periodic_timer_event :check_queue, 1
   FLOWHARDTIMEOUT = 300
- 
+
   def start
     @fdb = {}
     @adb = {}
-    @slice = {}
-    @slice_reverse = {}
+    #@slice = {}
+    #@slice_reverse = {}
     @command_line = CommandLine.new
     @command_line.parse(ARGV.dup)
     @topology = Topology.new(@command_line)
@@ -40,71 +40,69 @@ class RoutingSwitch < Controller
       end
     end
   end
- 
+
   def parser(args)
-                                if args.length > 2
-                                  begin
-                                    mac = Mac.new(args[2].to_s)
-                                  rescue
-                                          p "Input Error: Invalid mac address."
-                                          return
-                                  end
-                                end
- 
-                            case args[0]
-                                          when "create-slice"
-                                                        if (args.length == 2)
-                                                                      @queue.push([args[0],args[1]])
-                                                        else
-                                                                      p "Usage: create-slice slice"
-                                                        end
-                                          when "delete-slice"
-                                                        if (args.length == 2)
-                                                                      @queue.push([args[0],args[1]])
-                                                        else
-                                                                      p "Usage: delete-slice slice"
-                                                        end
-                                          when "add-host"
-                                                        if (args.length == 3)
-                                                                      @queue.push([args[0],args[1],mac])
-                                                        else
-                                                                      p "Usage: add-host slice mac"
-                                                        end
-                                          when "delete-host"
-                                                        if (args.length == 3)
-                                                                      @queue.push([args[0],args[1],mac])
-                                                        else
-                                                                      p "Usage: delete-host slice mac"
-                                                        end
-                                          when "show"
-                                                        if (args.length == 1)
- 
-                                                        else
-                                                                      p "Usage: show"
-                                                        end
-                                          when "test_001"
-                                                        if (args.length == 1)
-                                                                      @queue.push(["test_001", 1])
-                                                        else
-                                                                      p "Usage: test_001"
-                                                        end
-                                          else
-                                                        p "No such command"
-                            end
-              end
- 
+    if args.length > 2
+      begin
+        mac = Mac.new(args[2].to_s)
+        rescue
+          p "Input Error: Invalid mac address."
+          return
+        end
+      end
+
+    case args[0]
+      when "create-slice"
+        if (args.length == 2)
+          @queue.push([args[0],args[1]])
+        else
+          p "Usage: create-slice slice"
+        end
+      when "delete-slice"
+        if (args.length == 2)
+          @queue.push([args[0],args[1]])
+        else
+          p "Usage: delete-slice slice"
+        end
+      when "add-host"
+        if (args.length == 3)
+          @queue.push([args[0],args[1],mac])
+        else
+          p "Usage: add-host slice mac"
+        end
+      when "delete-host"
+        if (args.length == 3)
+          @queue.push([args[0],args[1],mac])
+        else
+          p "Usage: delete-host  mac"
+        end
+      when "close"
+        if (args.length != 1)
+          p "Usage: close"
+        end
+      when "test_001"
+        if (args.length == 1)
+          @queue.push(["test_001", 1])
+        else
+          p "Usage: test_001"
+        end
+      else
+        p "No such command"
+      end
+  end
+
  
   def switch_ready(dpid)
     @adb[dpid] = {} unless @adb.include?(dpid)
     send_message dpid, FeaturesRequest.new
   end
- 
+
   def features_reply(dpid, features_reply)
     features_reply.physical_ports.select(&:up?).each do |each|
       @topology.add_port each
     end
   end
- 
+
   def switch_disconnected(dpid)
     @fdb.each_pair do |key, value|
       @fdb.delete(key) if value['dpid'] == dpid
@@ -112,13 +110,13 @@ class RoutingSwitch < Controller
     @topology.delete_switch dpid
     @adb.delete(dpid) if @adb.include?(dpid)
   end
- 
+
   def port_status(dpid, port_status)
     updated_port = port_status.port
     return if updated_port.local?
     @topology.update_port updated_port
   end
- 
+
   def packet_in(dpid, packet_in)
     if packet_in.ipv4?
       add_host_by_packet_in dpid, packet_in
@@ -139,7 +137,7 @@ class RoutingSwitch < Controller
       @topology.add_link_by dpid, packet_in
     end
   end
- 
+
   def flow_removed(dpid, flow_removed)
     action = @adb[dpid][flow_removed.match.to_s]
     if action
@@ -147,23 +145,23 @@ class RoutingSwitch < Controller
       @adb[dpid].delete(flow_removed.match.to_s)
     end
   end
- 
+
   private
- 
+
   def learn_new_host_fdb(dpid, packet_in)
     unless @fdb.key?(packet_in.macsa)
       new_host = { 'dpid' => dpid, 'in_port' => packet_in.in_port }
       @fdb[packet_in.macsa] = new_host
     end
   end
- 
+
   def add_host_by_packet_in(dpid, packet_in)
     unless @topology.hosts.include?(packet_in.ipv4_saddr.to_s)
       @topology.add_host packet_in.ipv4_saddr.to_s
       @topology.add_host_to_link dpid, packet_in
     end
   end
- 
+
   def set_flow_for_routing(dpid, packet_in, dest_host)
     if dest_host['dpid'] == dpid
       flow_mod_to_host(dpid, packet_in, dest_host['in_port'], FLOWHARDTIMEOUT)
@@ -191,17 +189,17 @@ class RoutingSwitch < Controller
     end
     p @adb
   end
- 
+
   def flood_lldp_frames
     @topology.each_switch do |dpid, ports|
       send_lldp dpid, ports
     end
   end
- 
+
   def check_queue
     slice_command_run unless @queue.empty?
   end
- 
+
   def slice_command_run
     queue_result = @queue.pop
     p queue_result
@@ -216,8 +214,8 @@ class RoutingSwitch < Controller
       end
 =end
     when "create-slice"
-      unless @db.slice?(queue_result[1]) # slice does not exist
-        @db.create_slice(queue_result[1]) # add slice
+      unless @db.slice?(queue_result[1])
+        @db.create_slice(queue_result[1])
       else
         p "Error: This slice already exists."
       end
@@ -235,9 +233,11 @@ class RoutingSwitch < Controller
       end
 =end
     when "delete-slice"
-      if @db.slice?(queue_result[1])# slice exists
-        @db.delete_slice(queue_result[1]) # delete-slice
-        # flow_mod_delete?
+      if @db.slice?(queue_result[1])
+        @db.get_hosts([queue_result[1]]).each do |each|
+          flow_mod_delete(each)
+        end
+        @db.delete_slice(queue_result[1])
       else
         p "Error: Such a slice does not exist."
       end
@@ -260,10 +260,10 @@ class RoutingSwitch < Controller
       end
 =end
     when "add-host"
-      if @db.slice?(queue_result[1]) and !@db.host?(queue_result[1]) # slice exists
-        @db.add_host(queue_result[1], queue_result[2]) # add-host
+      if @db.slice?(queue_result[1]) and !@db.host?(queue_result[2])
+        @db.add_host(queue_result[1], queue_result[2])
       else
-        p "Error: This slice does not exist."
+        p "Error: This slice does not exist or this mac address already exist."
       end
 =begin
     when "delete-host"
@@ -282,11 +282,14 @@ class RoutingSwitch < Controller
       end
 =end
     when "delete-host"
-      if @db.host?(queue_result[1]) # slice exists
-        @db.delete_host(queue_result[1]) #delete-host
+      if @db.host?(queue_result[2])
+        @db.delete_host(queue_result[2])
+        flow_mod_delete(queue_result[2])
       else
-        p "Error: Such a slice does not exist"
+        p "Error: Such a host does not exist"
       end
+    when "close"
+      @db.close
     when "test_001"
       mac1 = Mac.new("00:00:00:00:00:01")
       mac2 = Mac.new("00:00:00:00:00:03")
@@ -296,10 +299,10 @@ class RoutingSwitch < Controller
     else
       p "cannot read command"
     end
-    p @slice
-    p @slice_reverse
+    #p @slice
+    #p @slice_reverse
   end
- 
+
   def send_lldp(dpid, ports)
     ports.each do |each|
       port_number = each.number
@@ -310,7 +313,7 @@ class RoutingSwitch < Controller
       )
     end
   end
- 
+
   def lldp_binary_string(dpid, port_number)
     destination_mac = @command_line.destination_mac
     if destination_mac
@@ -321,7 +324,7 @@ class RoutingSwitch < Controller
       Pio::Lldp.new(dpid: dpid, port_number: port_number).to_binary
     end
   end
- 
+
   def flow_mod(dpid, message, port, timeout)
     send_flow_mod_add(
       dpid,
@@ -330,7 +333,7 @@ class RoutingSwitch < Controller
       actions: SendOutPort.new(port)
     )
   end
- 
+
   def flow_mod_to_host(dpid, message, port, timeout)
     send_flow_mod_add(
       dpid,
@@ -339,7 +342,7 @@ class RoutingSwitch < Controller
       actions: SendOutPort.new(port)
     )
   end
- 
+
   def flow_mod_delete(dst_mac)
     @adb.each do |key, value|
       send_flow_mod_delete(
@@ -352,7 +355,7 @@ class RoutingSwitch < Controller
       )
     end
   end
- 
+
   def packet_out(dpid, message, port)
     send_packet_out(
       dpid,
@@ -361,9 +364,10 @@ class RoutingSwitch < Controller
     )
   end
 end
- 
+
 ### Local variables:
 ### mode: Ruby
 ### coding: utf-8-unix
 ### indent-tabs-mode: nil
 ### End:
+

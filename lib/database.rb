@@ -33,7 +33,7 @@ class Database
   def host?(mac)
     exist = false
     @db.results_as_hash = true
-    @db.execute('select * from host where mac=?', mac) do |row|
+    @db.execute('select * from host where mac=?', mac.to_s) do |row|
       exist = true
     end
     return exist
@@ -42,7 +42,7 @@ class Database
   def search_slice(mac)
     name = ""
     @db.results_as_hash = true
-    @db.execute('select * from host where mac=?', mac) do |row|
+    @db.execute('select * from host where mac=?', mac.to_s) do |row|
       name = row['slice']
     end
     return name
@@ -63,7 +63,7 @@ class Database
   end
 
   def add_host(slice, mac)
-    @db.execute("insert into host values (?, ?)", slice, mac)
+    @db.execute("insert into host values (?, ?)", slice, mac.to_s)
   end
 
   def delete_slice(slice)
@@ -71,7 +71,7 @@ class Database
   end
 
   def delete_host(mac)
-    @db.execute("delete from host where mac=?", mac)
+    @db.execute("delete from host where mac=?", mac.to_s)
   end
 
 end
