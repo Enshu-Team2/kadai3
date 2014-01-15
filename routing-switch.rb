@@ -8,6 +8,7 @@ require 'command-line'
 require 'topology'
 require 'trema'
 require 'trema-extensions/port'
+require 'data_base'
 
 require 'thread'
 require 'sqlite3'
@@ -28,18 +29,16 @@ class RoutingSwitch < Controller
     @command_line = CommandLine.new
     @command_line.parse(ARGV.dup)
     @topology = Topology.new(@command_line)
-    @db = SQLite3::Database.new("slice.db")
-    @db.close
+    @db = Database.new
 
-		@queue = Queue.new
-
-		@thread = Thread.new do
-			loop do
-				input = $stdin.gets
-				args = input.split(" ")
-				parser(args)
-			end
-		end
+    @queue = Queue.new
+    @thread = Thread.new do
+      loop do
+        input = $stdin.gets
+        args = input.split(" ")
+        parser(args)
+      end
+    end
   end
 
 	def parser(args)
@@ -204,12 +203,21 @@ class RoutingSwitch < Controller
     p queue_result
     command = queue_result[0]
     case command
+=begin
     when "create-slice"
       unless @slice[queue_result[1]]
         @slice[queue_result[1]] = []
       else
         p "Error: This slice already exists."
       end
+=end
+    when "create-slice"
+      unless @db.slice?(queue_result[1]) # slice does not exist
+        @db.create_slice(queue_result[1]) # add slice
+      else
+        p "Error: This slice already exists."
+      end
+=begin
     when "delete-slice"
       if @slice[queue_result[1]] # need to delete flow entry in switch
         @slice[queue_result[1]].each do |each|
@@ -221,6 +229,17 @@ class RoutingSwitch < Controller
       else
         p "Error: Such a slice does not exist."
       end
+=end
+=begin
+    when "delete-slice"
+      if # slice exists
+        # delete-slice
+        # flow_mod_delete?
+      else
+        p "Error: Such a slice does not exist."
+      end
+=end
+=begin
     when "add-host"
       if @slice[queue_result[1]]
         unless @slice[queue_result[1]].include?(queue_result[2])
@@ -237,6 +256,14 @@ class RoutingSwitch < Controller
       else
         p "Error: This slice does not exist."
       end
+=end
+    when "add-host"
+      if slice?(queue_result[1]) # slice exists
+        add-host(queue_result[1], queue_result[2]) # add-host
+      else
+        p "Error: This slice does not exist."
+      end
+=begin
     when "delete-host"
       if @slice[queue_result[1]]
         if @slice[queue_result[1]].delete(queue_result[2]).nil?
@@ -251,6 +278,15 @@ class RoutingSwitch < Controller
       else
         p "Error: Such a slice does not exist"
       end
+=end
+=begin
+    when "delete-host"
+      if # slice exists
+        #delete-host
+      else
+        p "Error: Such a slice does not exist"
+      end
+=end
     when "test_001"
       mac1 = Mac.new("00:00:00:00:00:01")
       mac2 = Mac.new("00:00:00:00:00:03")
