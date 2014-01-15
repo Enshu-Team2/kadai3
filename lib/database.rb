@@ -3,7 +3,6 @@ require 'rubygems'
 require 'sqlite3'
 
 class Database
-  attr_reader :db
 
   def initialize
     @db = SQLite3::Database.new("slice.db")
@@ -26,9 +25,16 @@ class Database
     exist = false
     @db.results_as_hash = true
     @db.execute('select * from host where slice=?', slice) do |row|
-      #rowは結果の配列
-      #puts row.join("\t")
       exist = true if (row['mac'] == "")
+    end
+    return exist
+  end
+
+  def host?(mac)
+    exist = false
+    @db.results_as_hash = true
+    @db.execute('select * from host where mac=?', mac) do |row|
+      exist = true
     end
     return exist
   end
@@ -40,6 +46,15 @@ class Database
       name = row['slice']
     end
     return name
+  end
+
+  def get_hosts(slice)
+    list = []
+    @db.results_as_hash = true
+    @db.execute('select * from host where slice=?', slice) do |row|
+      list.push(row['mac']) unless (row['mac'] == "")
+    end
+    return list
   end
 
   def create_slice(slice)
@@ -56,7 +71,7 @@ class Database
   end
 
   def delete_host(mac)
-    @db.execute("delete from host where mac=?", slice)
+    @db.execute("delete from host where mac=?", mac)
   end
 
 end
