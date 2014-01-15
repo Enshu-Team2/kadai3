@@ -11,7 +11,6 @@ require 'trema-extensions/port'
 
 require 'thread'
 require 'sqlite3'
-require 'database'
 
 #
 # Routing Switch using LLDP to collect network topology information.
@@ -29,7 +28,8 @@ class RoutingSwitch < Controller
     @command_line = CommandLine.new
     @command_line.parse(ARGV.dup)
     @topology = Topology.new(@command_line)
-    @db = Database.new
+    @db = SQLite3::Database.new("slice.db")
+    @db.close
 
 		@queue = Queue.new
 
@@ -54,7 +54,6 @@ class RoutingSwitch < Controller
 
 		case args[0]
 			when "create-slice"
-        p @db.slice?(args[1])
 				if (args.length == 2)
 					@queue.push([args[0],args[1]])
 				else
@@ -90,8 +89,6 @@ class RoutingSwitch < Controller
 				else
 					p "Usage: test_001"
 				end
-      when "close"
-        @db.close
 			else
 				p "No such command"
 		end
