@@ -6,6 +6,10 @@ class Database
 
   def initialize
     @db = SQLite3::Database.new("slice.db")
+    tables = @db.execute("SELECT tbl_name FROM sqlite_master WHERE type == 'table'").flatten
+    if tables.include?("host")
+      @db.execute("DROP TABLE host")
+    end
     sql = <<-SQL
     create table host(
       slice varchar(20),
@@ -15,7 +19,7 @@ class Database
     @db.execute(sql)
   end
 
-  def close
+  def close_db
     @db.execute("DROP TABLE host")
     @db.close
     p "database closed"
@@ -40,7 +44,7 @@ class Database
   end
 
   def search_slice(mac)
-    name = ""
+    name = false
     @db.results_as_hash = true
     @db.execute('select * from host where mac=?', mac.to_s) do |row|
       name = row['slice']

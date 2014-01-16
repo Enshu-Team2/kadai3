@@ -24,8 +24,6 @@ class RoutingSwitch < Controller
   def start
     @fdb = {}
     @adb = {}
-    #@slice = {}
-    #@slice_reverse = {}
     @command_line = CommandLine.new
     @command_line.parse(ARGV.dup)
     @topology = Topology.new(@command_line)
@@ -48,8 +46,8 @@ class RoutingSwitch < Controller
         rescue
           p "Input Error: Invalid mac address."
           return
-        end
       end
+    end
 
     case args[0]
       when "create-slice"
@@ -77,18 +75,14 @@ class RoutingSwitch < Controller
           p "Usage: delete-host  mac"
         end
       when "close"
-        if (args.length != 1)
-          p "Usage: close"
-        end
-      when "test_001"
         if (args.length == 1)
-          @queue.push(["test_001", 1])
+          @queue.push([args[0]])
         else
-          p "Usage: test_001"
+          p "Usage: close"
         end
       else
         p "No such command"
-      end
+    end
   end
 
  
@@ -122,14 +116,10 @@ class RoutingSwitch < Controller
       add_host_by_packet_in dpid, packet_in
       learn_new_host_fdb dpid, packet_in
       dest_host = @fdb[packet_in.macda]
-=begin
-      dest_slice = @slice_reverse[packet_in.macda]
-      source_slice = @slice_reverse[packet_in.macsa]
-=end
       dest_slice = @db.search_slice(packet_in.macda.to_s)
       source_slice = @db.search_slice(packet_in.macsa.to_s)
       if dest_slice == source_slice
-        unless dest_slice.nil?
+        if dest_slice
           set_flow_for_routing dpid, packet_in, dest_host if dest_host
         end
       end
@@ -205,33 +195,12 @@ class RoutingSwitch < Controller
     p queue_result
     command = queue_result[0]
     case command
-=begin
-    when "create-slice"
-      unless @slice[queue_result[1]]
-        @slice[queue_result[1]] = []
-      else
-        p "Error: This slice already exists."
-      end
-=end
     when "create-slice"
       unless @db.slice?(queue_result[1])
         @db.create_slice(queue_result[1])
       else
         p "Error: This slice already exists."
       end
-=begin
-    when "delete-slice"
-      if @slice[queue_result[1]] # need to delete flow entry in switch
-        @slice[queue_result[1]].each do |each|
-          p each
-          flow_mod_delete(each)
-          @slice_reverse.delete(each)
-        end
-        @slice.delete(queue_result[1])
-      else
-        p "Error: Such a slice does not exist."
-      end
-=end
     when "delete-slice"
       if @db.slice?(queue_result[1])
         @db.get_hosts([queue_result[1]]).each do |each|
@@ -241,46 +210,12 @@ class RoutingSwitch < Controller
       else
         p "Error: Such a slice does not exist."
       end
-=begin
-    when "add-host"
-      if @slice[queue_result[1]]
-        unless @slice[queue_result[1]].include?(queue_result[2])
-          unless @slice_reverse.key?(queue_result[2])
-            @slice[queue_result[1]] << queue_result[2]
-            @slice_reverse[queue_result[2]] = {} if @slice_reverse[queue_result[2]].nil?
-            @slice_reverse[queue_result[2]] = queue_result[1]
-          else
-            p "Error: This mac address already exist."
-          end
-        else
-          p "Error: This mac address already exist."
-        end
-      else
-        p "Error: This slice does not exist."
-      end
-=end
     when "add-host"
       if @db.slice?(queue_result[1]) and !@db.host?(queue_result[2])
         @db.add_host(queue_result[1], queue_result[2])
       else
         p "Error: This slice does not exist or this mac address already exist."
       end
-=begin
-    when "delete-host"
-      if @slice[queue_result[1]]
-        if @slice[queue_result[1]].delete(queue_result[2]).nil?
-          p "Error: Such a mac address does not exist."             
-        end
-        if @slice_reverse[queue_result[2]]
-          @slice_reverse.delete(queue_result[2])
-          flow_mod_delete(queue_result[2])
-        else
-          p "Error: Such a mac address does not exist."
-        end
-      else
-        p "Error: Such a slice does not exist"
-      end
-=end
     when "delete-host"
       if @db.host?(queue_result[2])
         @db.delete_host(queue_result[2])
@@ -289,18 +224,10 @@ class RoutingSwitch < Controller
         p "Error: Such a host does not exist"
       end
     when "close"
-      @db.close
-    when "test_001"
-      mac1 = Mac.new("00:00:00:00:00:01")
-      mac2 = Mac.new("00:00:00:00:00:03")
-      @slice["1"] = [mac1, mac2]
-      @slice_reverse[mac1] = "1"
-      @slice_reverse[mac2] = "1"
+      @db.close_db
     else
       p "cannot read command"
     end
-    #p @slice
-    #p @slice_reverse
   end
 
   def send_lldp(dpid, ports)
